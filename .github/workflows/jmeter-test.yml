@@ -15,18 +15,17 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    # Step 2: Set up JMeter
-    - name: Install JMeter and configure XStream whitelist
+    # Step 2: Set up JMeter and configure XStream whitelist
+    - name: Install JMeter and configure whitelist
       run: |
         sudo apt-get update
         sudo apt-get install -y jmeter
-        echo "xstream.whitelist=org.apache.jmeter.save.ScriptWrapper, com.thoughtworks.xstream.mapper.DynamicProxyMapper" > /etc/jmeter/jmeter.properties
+        echo "xstream.whitelist=org.apache.jmeter.save.ScriptWrapper, com.thoughtworks.xstream.mapper.DynamicProxyMapper" > ./jmeter.properties
 
     # Step 3: Run JMeter test with google_search.jmx
     - name: Run JMeter Test
       run: |
-        echo "xstream.whitelist=com.thoughtworks.xstream.mapper.DynamicProxyMapper,org.apache.jmeter.save.ScriptWrapper" > whitelist.properties
-        jmeter -n -t ./google_search.jmx -l results.jtl -q whitelist.properties
+        jmeter -n -t ./google_search.jmx -l results.jtl -p ./jmeter.properties
 
     # Step 4: Generate HTML report from the results
     - name: Generate JMeter HTML Report
