@@ -1,0 +1,40 @@
+name: Run JMeter Test
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  run-jmeter-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    # Step 1: Checkout the code
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Step 2: Set up JMeter
+    - name: Install JMeter
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y jmeter
+
+    # Step 3: Run JMeter test with google_search.jmx
+    - name: Run JMeter Test
+      run: |
+        jmeter -n -t ./google_search.jmx -l results.jtl
+
+    # Step 4: Generate HTML report from the results
+    - name: Generate JMeter HTML Report
+      run: |
+        jmeter -g results.jtl -o report-output
+
+    # Step 5: Upload the report as an artifact with an 8-day expiration
+    - name: Upload HTML report
+      uses: actions/upload-artifact@v3
+      with:
+        name: jmeter-report
+        path: report-output/
+        retention-days: 8
