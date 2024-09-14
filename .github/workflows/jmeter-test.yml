@@ -24,7 +24,8 @@ jobs:
     # Step 3: Run JMeter test with google_search.jmx
     - name: Run JMeter Test
       run: |
-        jmeter -n -t ./google_search.jmx -l results.jtl
+        echo "xstream.whitelist=com.thoughtworks.xstream.mapper.DynamicProxyMapper,org.apache.jmeter.save.ScriptWrapper" > whitelist.properties
+        jmeter -n -t ./google_search.jmx -l results.jtl -q whitelist.properties
 
     # Step 4: Generate HTML report from the results
     - name: Generate JMeter HTML Report
