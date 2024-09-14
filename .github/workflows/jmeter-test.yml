@@ -15,26 +15,21 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    # Step 2: Set up JMeter and disable XStream security
-    - name: Install JMeter and disable XStream security
+    # Step 2: Set up JMeter with Docker
+    - name: Run JMeter Test using Docker
       run: |
-        sudo apt-get update
-        sudo apt-get install -y jmeter
+        docker pull justb4/jmeter:5.5
+        docker run --name jmeter-container -v ${{ github.workspace }}:/jmeter -w /jmeter justb4/jmeter:5.5 -n -t ./google_search.jmx -l ./results.jtl
 
-    # Step 3: Run JMeter test with google_search.jmx and disable XStream security
-    - name: Run JMeter Test
-      run: |
-        jmeter -n -t ./google_search.jmx -l results.jtl -Jjmeter.save.saveservice.xstream_security_check=false
-
-    # Step 4: Generate HTML report from the results
+    # Step 3: Generate HTML report from the results using Docker
     - name: Generate JMeter HTML Report
       run: |
-        jmeter -g results.jtl -o report-output
+        docker run --rm -v ${{ github.workspace }}:/jmeter -w /jmeter justb4/jmeter:5.5 -g ./results.jtl -o ./report-output
 
-    # Step 5: Upload the report as an artifact with an 8-day expiration
+    # Step 4: Upload the report as an artifact with an 8-day expiration
     - name: Upload HTML report
       uses: actions/upload-artifact@v3
       with:
         name: jmeter-report
-        path: report-output/
+        path: ./report-output/
         retention-days: 8
