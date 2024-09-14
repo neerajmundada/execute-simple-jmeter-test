@@ -15,20 +15,16 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    # Step 2: Set up JMeter and configure XStream whitelist
-    - name: Install JMeter and configure whitelist
+    # Step 2: Set up JMeter and disable XStream security
+    - name: Install JMeter and disable XStream security
       run: |
         sudo apt-get update
         sudo apt-get install -y jmeter
-        
-        # Create a jmeter.properties file with security settings
-        echo "xstream.whitelist=org.apache.jmeter.save.ScriptWrapper, com.thoughtworks.xstream.mapper.DynamicProxyMapper" > ./jmeter.properties
-        echo "xstream.blacklist=" >> ./jmeter.properties
 
-    # Step 3: Run JMeter test with google_search.jmx
+    # Step 3: Run JMeter test with google_search.jmx and disable XStream security
     - name: Run JMeter Test
       run: |
-        jmeter -n -t ./google_search.jmx -l results.jtl -q ./jmeter.properties
+        jmeter -n -t ./google_search.jmx -l results.jtl -Jjmeter.save.saveservice.xstream_security_check=false
 
     # Step 4: Generate HTML report from the results
     - name: Generate JMeter HTML Report
