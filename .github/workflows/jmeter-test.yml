@@ -20,12 +20,15 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y jmeter
+        
+        # Create a jmeter.properties file with security settings
         echo "xstream.whitelist=org.apache.jmeter.save.ScriptWrapper, com.thoughtworks.xstream.mapper.DynamicProxyMapper" > ./jmeter.properties
+        echo "xstream.blacklist=" >> ./jmeter.properties
 
     # Step 3: Run JMeter test with google_search.jmx
     - name: Run JMeter Test
       run: |
-        jmeter -n -t ./google_search.jmx -l results.jtl -p ./jmeter.properties
+        jmeter -n -t ./google_search.jmx -l results.jtl -q ./jmeter.properties
 
     # Step 4: Generate HTML report from the results
     - name: Generate JMeter HTML Report
