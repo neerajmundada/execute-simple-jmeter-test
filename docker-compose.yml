@@ -1,29 +1,29 @@
-version: '3'
+version: '3.8'
 
 services:
   influxdb:
     image: influxdb:1.8
-    container_name: influxdb
-    environment:
-      - INFLUXDB_DB=jmeter
-      - INFLUXDB_ADMIN_USER=admin
-      - INFLUXDB_ADMIN_PASSWORD=admin
-      - INFLUXDB_USER=jmeter
-      - INFLUXDB_USER_PASSWORD=jmeter
     ports:
-      - "8086:8086"
+      - "8086:8086"  # InfluxDB port
     volumes:
-      - ./influxdb_data:/var/lib/influxdb
+      - influxdb_data:/var/lib/influxdb
+    environment:
+      INFLUXDB_DB: mydb  # Default database name
+      INFLUXDB_USER: user  # Default username
+      INFLUXDB_ADMIN_USER: admin  # Admin username
+      INFLUXDB_ADMIN_PASSWORD: adminpassword  # Admin password
 
   grafana:
     image: grafana/grafana:latest
-    container_name: grafana
-    environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
     ports:
-      - "3000:3000"
-    volumes:
-      - ./grafana_data:/var/lib/grafana
+      - "3000:3000"  # Grafana port
     depends_on:
       - influxdb
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin  # Default admin password
+    volumes:
+      - grafana_data:/var/lib/grafana  # Persistent storage for Grafana
+
+volumes:
+  influxdb_data:
+  grafana_data:
