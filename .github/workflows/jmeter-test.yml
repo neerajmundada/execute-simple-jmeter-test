@@ -32,6 +32,14 @@ jobs:
         echo "Waiting for Grafana to be ready..."
         sleep 30 # Wait for Grafana to initialize
 
+    # Optional: Replace sleep with a readiness check
+    # - name: Wait for Grafana to be ready
+    #   run: |
+    #     until curl -s http://localhost:3000 >/dev/null; do
+    #       echo "Waiting for Grafana..."
+    #       sleep 5
+    #     done
+
     # Step 5: Run JMeter tests with Docker
     - name: Run JMeter Tests
       run: |
