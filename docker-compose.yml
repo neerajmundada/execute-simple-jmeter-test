@@ -1,29 +1,6 @@
 version: '3.8'
 
 services:
-  influxdb:
-    image: influxdb:1.8
-    ports:
-      - "8086:8086"  # InfluxDB port
-    volumes:
-      - influxdb_data:/var/lib/influxdb
-    environment:
-      INFLUXDB_DB: mydb  # Default database name
-      INFLUXDB_USER: user  # Default username
-      INFLUXDB_ADMIN_USER: admin  # Admin username
-      INFLUXDB_ADMIN_PASSWORD: adminpassword  # Admin password
-
-  grafana:
-    image: grafana/grafana:latest
-    ports:
-      - "3000:3000"  # Grafana port
-    depends_on:
-      - influxdb
-    environment:
-      GF_SECURITY_ADMIN_PASSWORD: admin  # Default admin password
-    volumes:
-      - grafana_data:/var/lib/grafana  # Persistent storage for Grafana
-
   jmeter:
     image: justb4/jmeter:5.5
     volumes:
@@ -36,10 +13,4 @@ services:
       "-e", "-o", "./results/html_report",
       "-Jusers=1", "-Jiterations=5", "-Jconstant_time=1000", "-Jrandom_time=10000", "-Jrandom_time_variance=3000"
     ]
-    environment:
-      - INFLUXDB_URL=http://influxdb:8086/write?db=mydb  # Sending metrics to InfluxDB
-      - INFLUXDB_TOKEN=adminpassword
 
-volumes:
-  influxdb_data:
-  grafana_data:
