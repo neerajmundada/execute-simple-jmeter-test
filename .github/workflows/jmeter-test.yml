@@ -49,7 +49,7 @@ jobs:
 
       - name: Run JMeter Test
         run: |
-          docker run --rm -v ${{ github.workspace }}:/jmeter -v ${{ github.workspace }}/results:/results -w /jmeter justb4/jmeter:5.5 \
+          docker run --rm -v ${{ github.workspace }}:/jmeter -v ${{ github.workspace }}/results:/results -w /jmeter apache/jmeter:5.5 \
           -n -t ./google_search.jmx -l ./results/results.jtl \
           -Jusers=${{ github.event.inputs.users }} \
           -Jiterations=${{ github.event.inputs.iterations }} \
