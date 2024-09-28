@@ -1,4 +1,4 @@
-name: Execute JMeter Test with Grafana
+name: Execute JMeter Test
 
 on:
   workflow_dispatch:
@@ -23,10 +23,6 @@ on:
         description: 'Variance for random time in milliseconds'
         required: true
         default: 3000
-      wait_time:
-        description: 'Wait time in minutes before shutting down Grafana (default: 2)'
-        required: false
-        default: 2
 
 jobs:
   run-jmeter:
@@ -47,14 +43,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y docker-compose
 
-    # Step 4: Start Grafana and InfluxDB using Docker Compose
-    - name: Start Grafana and InfluxDB
-      run: |
-        docker-compose up -d
-        echo "Waiting for Grafana to be ready..."
-        sleep 30  # Wait for Grafana to initialize
-
-    # Step 5: Run JMeter tests with Docker
+    # Step 4: Run JMeter tests with Docker
     - name: Run JMeter Tests
       run: |
         docker run --rm \
@@ -68,7 +57,7 @@ jobs:
           -Jrandom_time=${{ github.event.inputs.random_time }} \
           -Jrandom_time_variance=${{ github.event.inputs.random_time_variance }}
 
-    # Step 6: Generate JMeter HTML Report
+    # Step 5: Generate JMeter HTML Report
     - name: Generate JMeter Report
       run: |
         docker run --rm \
@@ -77,23 +66,10 @@ jobs:
           -w /jmeter justb4/jmeter:5.5 \
           -g ./results/results.jtl -o ./results/report
 
-    # Step 7: Upload HTML Report as artifact
+    # Step 6: Upload HTML Report as artifact
     - name: Upload JMeter HTML Report
       uses: actions/upload-artifact@v3
       with:
         name: jmeter-report
         path: ./results/report
         retention-days: 8
-
-    # Step 8: Wait for the specified time (default 2 minutes) before shutting down Grafana and InfluxDB
-    - name: Wait before shutting down
-      run: |
-        wait_time=${{ github.event.inputs.wait_time }}
-        echo "Waiting for $wait_time minute(s) before shutting down Grafana and InfluxDB..."
-        sleep $((wait_time * 60))
-
-    # Step 9: Stop Grafana and InfluxDB
-    - name: Stop Grafana and InfluxDB
-      run: |
-        echo "Shutting down Grafana and InfluxDB..."
-        docker-compose down
