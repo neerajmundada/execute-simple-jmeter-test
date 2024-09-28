@@ -5,7 +5,28 @@
       <boolProp name="TestPlan.functional_mode">false</boolProp>
       <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>
       <elementProp name="TestPlan.user_defined_variables" elementType="Arguments">
-        <collectionProp name="Arguments.arguments"/>
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="users" elementType="Argument">
+            <stringProp name="Argument.name">users</stringProp>
+            <stringProp name="Argument.value">${__P(users,1)}</stringProp>
+          </elementProp>
+          <elementProp name="iterations" elementType="Argument">
+            <stringProp name="Argument.name">iterations</stringProp>
+            <stringProp name="Argument.value">${__P(iterations,5)}</stringProp>
+          </elementProp>
+          <elementProp name="constant_time" elementType="Argument">
+            <stringProp name="Argument.name">constant_time</stringProp>
+            <stringProp name="Argument.value">${__P(constant_time,1000)}</stringProp>
+          </elementProp>
+          <elementProp name="random_time" elementType="Argument">
+            <stringProp name="Argument.name">random_time</stringProp>
+            <stringProp name="Argument.value">${__P(random_time,10000)}</stringProp>
+          </elementProp>
+          <elementProp name="random_time_variance" elementType="Argument">
+            <stringProp name="Argument.name">random_time_variance</stringProp>
+            <stringProp name="Argument.value">${__P(random_time_variance,3000)}</stringProp>
+          </elementProp>
+        </collectionProp>
       </elementProp>
       <stringProp name="TestPlan.user_define_classpath"></stringProp>
     </TestPlan>
@@ -14,9 +35,9 @@
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController">
           <boolProp name="LoopController.continue_forever">false</boolProp>
-          <stringProp name="LoopController.loops">${__P(iterations,5)}</stringProp>
+          <stringProp name="LoopController.loops">${iterations}</stringProp>
         </elementProp>
-        <stringProp name="ThreadGroup.num_threads">${__P(users,1)}</stringProp>
+        <stringProp name="ThreadGroup.num_threads">${users}</stringProp>
         <stringProp name="ThreadGroup.ramp_time">10</stringProp>
         <boolProp name="ThreadGroup.scheduler">false</boolProp> <!-- Disable scheduler -->
         <stringProp name="ThreadGroup.duration"></stringProp>
