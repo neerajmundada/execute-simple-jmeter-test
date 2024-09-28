@@ -71,7 +71,23 @@
           <stringProp name="HTTPSampler.protocol"></stringProp>
           <stringProp name="HTTPSampler.path">/search</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
+          <stringProp name="HTTPSampler.follow_redirects">true</stringProp>
+          <stringProp name="HTTPSampler.auto_redirects">false</stringProp>
+          <stringProp name="HTTPSampler.use_keepalive">true</stringProp>
+          <stringProp name="HTTPSampler.DO_MULTIPART_POST">false</stringProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
         </HTTPSamplerProxy>
+        <hashTree/>
+        <!-- Add Constant Timer for constant wait time -->
+        <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Constant Timer" enabled="true">
+          <stringProp name="ConstantTimer.delay">${__P(constant_time,1000)}</stringProp>
+        </ConstantTimer>
+        <hashTree/>
+        <!-- Add Gaussian Random Timer for random wait time -->
+        <GaussianRandomTimer guiclass="GaussianRandomTimerGui" testclass="GaussianRandomTimer" testname="Gaussian Random Timer" enabled="true">
+          <stringProp name="GaussianRandomTimer.mean">${__P(random_time,10000)}</stringProp>
+          <stringProp name="GaussianRandomTimer.deviation">${__P(random_time_variance,3000)}</stringProp>
+        </GaussianRandomTimer>
         <hashTree/>
       </hashTree>
     </hashTree>
