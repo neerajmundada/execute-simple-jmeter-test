@@ -1,75 +1,70 @@
-name: JMeter Load Testing
+name: Execute JMeter Test with Grafana
 
 on:
   workflow_dispatch:
-    inputs:
-      users:
-        description: 'Total number of users'
-        required: true
-        default: '1'
-        type: number
-      iterations:
-        description: 'Number of iterations per user'
-        required: true
-        default: '1'
-        type: number
-      constant_time:
-        description: 'Constant time after 1 iteration (milliseconds)'
-        required: false
-        default: '1000'
-        type: number
-      random_time:
-        description: 'Random time after each transaction (milliseconds)'
-        required: false
-        default: '10000'
-        type: number
-      random_time_variance:
-        description: 'Random time variance (milliseconds)'
-        required: false
-        default: '3000'
-        type: number
-      grafana_duration:
-        description: 'Grafana dashboard duration (minutes)'
-        required: false
-        default: '2'
-        type: number
+  push:
+    branches:
+      - main
 
 jobs:
-  test:
+  run-jmeter:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
+    # Step 1: Check out the repository
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-      - name: Install Docker Compose
-        run: |
-          sudo apt-get update
-          sudo apt-get install docker-compose -y
+    # Step 2: Set up Docker
+    - name: Set up Docker
+      uses: docker/setup-buildx-action@v2
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+    # Step 3: Install Docker Compose (ensuring it's available)
+    - name: Install Docker Compose
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y docker-compose
 
-      - name: Run Docker Compose
-        run: |
-          docker-compose up -d
-          echo "Waiting for Grafana to be ready..."
-          sleep 30
+    # Step 4: Start Grafana and InfluxDB using Docker Compose
+    - name: Start Grafana and InfluxDB
+      run: |
+        docker-compose up -d
+        echo "Waiting for Grafana to be ready..."
+        sleep 30 # Wait for Grafana to initialize
 
-      - name: Run JMeter Test
-        run: |
-          docker run --rm \
-            -v ${{ github.workspace }}:/jmeter \
-            -v ${{ github.workspace }}/results:/results \
-            -w /jmeter justb4/jmeter:5.5 \
-            -n -t ./google_search.jmx -l ./results/results.jtl \
-            -Jusers=${{ github.event.inputs.users }} \
-            -Jiterations=${{ github.event.inputs.iterations }} \
-            -Jconstant_time=${{ github.event.inputs.constant_time }} \
-            -Jrandom_time=${{ github.event.inputs.random_time }} \
-            -Jrandom_time_variance=${{ github.event.inputs.random_time_variance }}
+    # Step 5: Run JMeter tests with Docker
+    - name: Run JMeter Tests
+      run: |
+        docker run --rm \
+          -v ${{ github.workspace }}:/jmeter \
+          -v ${{ github.workspace }}/results:/results \
+          -w /jmeter justb4/jmeter:5.5 \
+          -n -t ./google_search.jmx -l ./results/results.jtl \
+          -Jusers=1 \
+          -Jiterations=5 \
+          -Jconstant_time=1000 \
+          -Jrandom_time=10000 \
+          -Jrandom_time_variance=3000
 
-      - name: Stop Grafana and InfluxDB
-        run: |
-          sleep $(( ${{ github.event.inputs.grafana_duration }} * 60 ))
-          docker-compose down
+    # Step 6: Generate JMeter HTML Report
+    - name: Generate JMeter Report
+      run: |
+        docker run --rm \
+          -v ${{ github.workspace }}:/jmeter \
+          -v ${{ github.workspace }}/results:/results \
+          -w /jmeter justb4/jmeter:5.5 \
+          -g ./results/results.jtl -o ./results/report
+
+    # Step 7: Upload HTML Report as artifact
+    - name: Upload JMeter HTML Report
+      uses: actions/upload-artifact@v3
+      with:
+        name: jmeter-report
+        path: ./results/report
+        retention-days: 8
+
+    # Step 8: Stop Grafana and InfluxDB (after 2 minutes or default)
+    - name: Stop Grafana and InfluxDB
+      run: |
+        echo "Shutting down Grafana and InfluxDB..."
+        docker-compose down
