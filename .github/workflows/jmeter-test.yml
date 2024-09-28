@@ -1,79 +1,57 @@
-name: JMeter Test with Grafana Monitoring
+name: JMeter Load Testing with Grafana
 
 on:
-  workflow_dispatch:
-    inputs:
-      users:
-        description: 'Number of users'
-        required: true
-        default: 1
-      iterations:
-        description: 'Number of iterations per user'
-        required: true
-        default: 1
-      constant_time:
-        description: 'Constant time after iteration in milliseconds'
-        required: true
-        default: 1000
-      random_time:
-        description: 'Random time after transaction in milliseconds'
-        required: true
-        default: 10000
-      random_time_variance:
-        description: 'Variance of random time in milliseconds'
-        required: true
-        default: 3000
-      grafana_timeout:
-        description: 'Grafana shutdown time in minutes (default 2 minutes)'
-        required: false
-        default: 2
+  push:
+    branches:
+      - main
 
 jobs:
-  test:
+  jmeter:
     runs-on: ubuntu-latest
-    
+
+    services:
+      influxdb:
+        image: influxdb:1.8
+        ports:
+          - "8086:8086"
+        volumes:
+          - influxdb_data:/var/lib/influxdb
+
+      grafana:
+        image: grafana/grafana:latest
+        ports:
+          - "3000:3000"
+        depends_on:
+          - influxdb
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
 
-      - name: Install Docker Compose
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y docker-compose
-
-      - name: Pull JMeter Docker Image
+      - name: Set up JMeter
         run: |
           docker pull justb4/jmeter:5.5
 
-      - name: Start InfluxDB and Grafana
+      - name: Run JMeter Test
         run: |
-          docker-compose up -d
+          docker run --rm -v ${{ github.workspace }}:/jmeter -w /jmeter justb4/jmeter:5.5 \
+          -n -t ./google_search.jmx -l ./results/results.jtl \
+          -Jusers=${{ inputs.users }} \
+          -Jiterations=${{ inputs.iterations }} \
+          -Jconstant_time=${{ inputs.constant_time }} \
+          -Jrandom_time=${{ inputs.random_time }} \
+          -Jrandom_time_variance=${{ inputs.random_time_variance }}
+
+      - name: Wait for Grafana to be ready
+        run: |
           echo "Waiting for Grafana to be ready..."
           sleep 30 # Wait for services to initialize
 
-      - name: Run JMeter Test
+      - name: Shutdown Grafana after specified time
         run: |
-          docker run --rm -v ${{ github.workspace }}:/jmeter -v ${{ github.workspace }}/results:/results -w /jmeter justb4/jmeter:5.5 \
-          -n -t ./google_search.jmx -l ./results/results.jtl \
-          -Jusers=${{ github.event.inputs.users }} \
-          -Jiterations=${{ github.event.inputs.iterations }} \
-          -Jconstant_time=${{ github.event.inputs.constant_time }} \
-          -Jrandom_time=${{ github.event.inputs.random_time }} \
-          -Jrandom_time_variance=${{ github.event.inputs.random_time_variance }}
+          echo "Shutting down Grafana..."
+          sleep 120 # Change this duration as needed
+          docker stop $(docker ps -q --filter ancestor=grafana/grafana:latest)
 
-      - name: Archive Test Results
-        uses: actions/upload-artifact@v3
-        with:
-          name: jmeter-results
-          path: results/
-          retention-days: 8
-
-      - name: Wait for Grafana Timeout
-        run: |
-          echo "Monitoring Grafana for ${{ github.event.inputs.grafana_timeout }} minutes..."
-          sleep $(( ${{ github.event.inputs.grafana_timeout }} * 60 ))
-
-      - name: Shutdown Grafana and InfluxDB
-        run: |
-          echo "Shutting down Grafana and InfluxDB..."
-          docker-compose down
+volumes:
+  influxdb_data:
