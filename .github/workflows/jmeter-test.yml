@@ -1,10 +1,32 @@
 name: Execute JMeter Test with Grafana
 
 on:
-  workflow_dispatch: # Manual trigger only
- # push:
- #   branches:
- #     - main
+  workflow_dispatch:
+    inputs:
+      users:
+        description: 'Number of users for the JMeter test'
+        required: true
+        default: 1
+      iterations:
+        description: 'Number of iterations for the JMeter test'
+        required: true
+        default: 5
+      constant_time:
+        description: 'Constant time in milliseconds'
+        required: true
+        default: 1000
+      random_time:
+        description: 'Random time in milliseconds'
+        required: true
+        default: 10000
+      random_time_variance:
+        description: 'Variance for random time in milliseconds'
+        required: true
+        default: 3000
+      wait_time:
+        description: 'Wait time in minutes before shutting down Grafana (default: 2)'
+        required: false
+        default: 2
 
 jobs:
   run-jmeter:
@@ -30,15 +52,7 @@ jobs:
       run: |
         docker-compose up -d
         echo "Waiting for Grafana to be ready..."
-        sleep 30 # Wait for Grafana to initialize
-
-    # Optional: Replace sleep with a readiness check
-    # - name: Wait for Grafana to be ready
-    #   run: |
-    #     until curl -s http://localhost:3000 >/dev/null; do
-    #       echo "Waiting for Grafana..."
-    #       sleep 5
-    #     done
+        sleep 30  # Wait for Grafana to initialize
 
     # Step 5: Run JMeter tests with Docker
     - name: Run JMeter Tests
@@ -48,11 +62,11 @@ jobs:
           -v ${{ github.workspace }}/results:/results \
           -w /jmeter justb4/jmeter:5.5 \
           -n -t ./google_search.jmx -l ./results/results.jtl \
-          -Jusers=1 \
-          -Jiterations=5 \
-          -Jconstant_time=1000 \
-          -Jrandom_time=10000 \
-          -Jrandom_time_variance=3000
+          -Jusers=${{ github.event.inputs.users }} \
+          -Jiterations=${{ github.event.inputs.iterations }} \
+          -Jconstant_time=${{ github.event.inputs.constant_time }} \
+          -Jrandom_time=${{ github.event.inputs.random_time }} \
+          -Jrandom_time_variance=${{ github.event.inputs.random_time_variance }}
 
     # Step 6: Generate JMeter HTML Report
     - name: Generate JMeter Report
@@ -71,7 +85,14 @@ jobs:
         path: ./results/report
         retention-days: 8
 
-    # Step 8: Stop Grafana and InfluxDB (after 2 minutes or default)
+    # Step 8: Wait for the specified time (default 2 minutes) before shutting down Grafana and InfluxDB
+    - name: Wait before shutting down
+      run: |
+        wait_time=${{ github.event.inputs.wait_time }}
+        echo "Waiting for $wait_time minute(s) before shutting down Grafana and InfluxDB..."
+        sleep $((wait_time * 60))
+
+    # Step 9: Stop Grafana and InfluxDB
     - name: Stop Grafana and InfluxDB
       run: |
         echo "Shutting down Grafana and InfluxDB..."
