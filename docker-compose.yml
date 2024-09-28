@@ -24,6 +24,22 @@ services:
     volumes:
       - grafana_data:/var/lib/grafana  # Persistent storage for Grafana
 
+  jmeter:
+    image: justb4/jmeter:5.5
+    volumes:
+      - ./jmeter:/jmeter
+      - ./results:/results
+    working_dir: /jmeter
+    entrypoint: [
+      "jmeter", "-n", "-t", "./google_search.jmx",
+      "-l", "./results/results.jtl",
+      "-e", "-o", "./results/html_report",
+      "-Jusers=1", "-Jiterations=5", "-Jconstant_time=1000", "-Jrandom_time=10000", "-Jrandom_time_variance=3000"
+    ]
+    environment:
+      - INFLUXDB_URL=http://influxdb:8086/write?db=mydb  # Sending metrics to InfluxDB
+      - INFLUXDB_TOKEN=adminpassword
+
 volumes:
   influxdb_data:
   grafana_data:
