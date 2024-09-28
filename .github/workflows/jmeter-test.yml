@@ -1,25 +1,58 @@
-name: Run JMeter Test
+name: Run JMeter Test with Custom Parameters
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
+    inputs:
+      total_users:
+        description: 'Total number of users'
+        required: true
+        default: 1
+        type: number
+      iterations:
+        description: 'Number of iterations per user'
+        required: true
+        default: 1
+        type: number
+      constant_time:
+        description: 'Constant time (ms) after 1 iteration (default: 1000 ms)'
+        required: false
+        default: 1000
+        type: number
+      random_time:
+        description: 'Random time (ms) after each transaction (default: 10000 ms)'
+        required: false
+        default: 10000
+        type: number
+      random_time_variance:
+        description: 'Randomize time (ms) by +/- (default: 3000 ms)'
+        required: false
+        default: 3000
+        type: number
 
 jobs:
   run-jmeter-test:
     runs-on: ubuntu-latest
-    
+
     steps:
     # Step 1: Checkout the code
     - name: Checkout code
       uses: actions/checkout@v3
 
-    # Step 2: Set up JMeter with Docker
-    - name: Run JMeter Test using Docker
+    # Step 2: Run JMeter Test using Docker with custom inputs
+    - name: Run JMeter Test with Custom Inputs
       run: |
         docker pull justb4/jmeter:5.5
-        docker run --name jmeter-container -v ${{ github.workspace }}:/jmeter -w /jmeter justb4/jmeter:5.5 -n -t ./google_search.jmx -l ./results.jtl
+        docker run --rm \
+          -v ${{ github.workspace }}:/jmeter \
+          -w /jmeter \
+          justb4/jmeter:5.5 \
+          -n -t ./google_search.jmx \
+          -l ./results.jtl \
+          -Jusers=${{ github.event.inputs.total_users }} \
+          -Jiterations=${{ github.event.inputs.iterations }} \
+          -Jconstant_time=${{ github.event.inputs.constant_time }} \
+          -Jrandom_time=${{ github.event.inputs.random_time }} \
+          -Jrandom_time_variance=${{ github.event.inputs.random_time_variance }}
 
     # Step 3: Generate HTML report from the results using Docker
     - name: Generate JMeter HTML Report
