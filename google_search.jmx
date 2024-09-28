@@ -6,7 +6,30 @@
       <boolProp name="TestPlan.functional_mode">false</boolProp>
       <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>
       <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
-      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true"/>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="users" elementType="Argument">
+            <stringProp name="Argument.name">users</stringProp>
+            <stringProp name="Argument.value">${users}</stringProp>
+          </elementProp>
+          <elementProp name="iterations" elementType="Argument">
+            <stringProp name="Argument.name">iterations</stringProp>
+            <stringProp name="Argument.value">${iterations}</stringProp>
+          </elementProp>
+          <elementProp name="constant_time" elementType="Argument">
+            <stringProp name="Argument.name">constant_time</stringProp>
+            <stringProp name="Argument.value">${constant_time}</stringProp>
+          </elementProp>
+          <elementProp name="random_time" elementType="Argument">
+            <stringProp name="Argument.name">random_time</stringProp>
+            <stringProp name="Argument.value">${random_time}</stringProp>
+          </elementProp>
+          <elementProp name="random_time_variance" elementType="Argument">
+            <stringProp name="Argument.name">random_time_variance</stringProp>
+            <stringProp name="Argument.value">${random_time_variance}</stringProp>
+          </elementProp>
+        </collectionProp>
+      </elementProp>
       <stringProp name="TestPlan.user_define_classpath"></stringProp>
     </TestPlan>
     <hashTree>
@@ -14,17 +37,21 @@
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
           <boolProp name="LoopController.continue_forever">false</boolProp>
-          <stringProp name="LoopController.loops">1</stringProp>
+          <stringProp name="LoopController.loops">${iterations}</stringProp>
         </elementProp>
-        <stringProp name="ThreadGroup.num_threads">1</stringProp>
+        <stringProp name="ThreadGroup.num_threads">${users}</stringProp>
         <stringProp name="ThreadGroup.ramp_time">1</stringProp>
-        <longProp name="ThreadGroup.start_time">1631461000000</longProp>
-        <longProp name="ThreadGroup.end_time">1631461000000</longProp>
-        <boolProp name="ThreadGroup.scheduler">false</boolProp>
-        <stringProp name="ThreadGroup.duration"></stringProp>
-        <stringProp name="ThreadGroup.delay"></stringProp>
       </ThreadGroup>
       <hashTree>
+        <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Constant Timer" enabled="true">
+          <stringProp name="ConstantTimer.delay">${constant_time}</stringProp>
+        </ConstantTimer>
+        <hashTree/>
+        <UniformRandomTimer guiclass="UniformRandomTimerGui" testclass="UniformRandomTimer" testname="Random Timer" enabled="true">
+          <stringProp name="ConstantTimer.delay">${random_time}</stringProp>
+          <stringProp name="RandomTimer.range">${random_time_variance}</stringProp>
+        </UniformRandomTimer>
+        <hashTree/>
         <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Google Search Request" enabled="true">
           <stringProp name="HTTPSampler.domain">www.google.com</stringProp>
           <stringProp name="HTTPSampler.port"></stringProp>
@@ -48,7 +75,6 @@
             </collectionProp>
           </elementProp>
         </HTTPSamplerProxy>
-        <hashTree/>
       </hashTree>
     </hashTree>
   </hashTree>
