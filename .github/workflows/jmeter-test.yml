@@ -41,6 +41,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y docker-compose
 
+      - name: Pull JMeter Docker Image
+        run: |
+          docker pull apache/jmeter:5.5
+
       - name: Start InfluxDB and Grafana
         run: |
           docker-compose up -d
