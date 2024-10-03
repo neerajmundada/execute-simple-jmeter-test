@@ -1,3 +1,11 @@
+# Disclaimer
+
+The content provided here is for **learning and knowledge-sharing purposes only**. While you are welcome to refer to this example and adapt it to your own projects, please use it responsibly and **avoid misuse**. For demonstration, intentionally **limited the maximum number of users and iterations** in the provided configuration. When implementing this or similar approaches in real-world applications, make sure to follow your organization's **security and safety standards**. 
+
+This is just one possible approach to load testing with JMeter and GitHub Actions, and there may be many other effective methods. Feel free to share your thoughts or better approaches for learning. Let's learn and grow together!
+
+---
+
 # JMeter Load Testing with Docker and GitHub Actions
 
 This repository demonstrates how to perform load testing using JMeter in a Docker container, integrated with GitHub Actions for continuous integration and deployment (CI/CD) workflows.
