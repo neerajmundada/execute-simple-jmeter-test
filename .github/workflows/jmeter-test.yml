@@ -4,13 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       users:
-        description: 'Number of users for the JMeter test'
+        description: 'Number of users for the JMeter test. Max limit is 3 for this example'
         required: true
         default: 1
       iterations:
-        description: 'Number of iterations for the JMeter test'
+        description: 'Number of iterations for the JMeter test. Max limit is 3 for this example'
         required: true
-        default: 5
+        default: 1
       constant_time:
         description: 'Constant time in milliseconds'
         required: true
@@ -42,6 +42,26 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y docker-compose
+
+    # Step 3.1: Restrict users and iterations input to a maximum of 3
+    - name: Set users and iterations limits
+      run: |
+        users=${{ github.event.inputs.users }}
+        iterations=${{ github.event.inputs.iterations }}
+        
+        # Restrict max users and iterations to 3
+        if [ "$users" -gt 3 ]; then
+          users=3
+        fi
+        if [ "$iterations" -gt 3 ]; then
+          iterations=3
+        fi
+        
+        echo "USERS: $users"
+        echo "ITERATIONS: $iterations"
+        
+        echo "users=$users" >> $GITHUB_ENV
+        echo "iterations=$iterations" >> $GITHUB_ENV
 
     # Step 4: Run JMeter tests with Docker
     - name: Run JMeter Tests
