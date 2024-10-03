@@ -71,8 +71,8 @@ jobs:
           -v ${{ github.workspace }}/results:/results \
           -w /jmeter justb4/jmeter:5.5 \
           -n -t ./google_search.jmx -l ./results/results.jtl \
-          -Jusers=${{ github.event.inputs.users }} \
-          -Jiterations=${{ github.event.inputs.iterations }} \
+          -Jusers=${{ env.users }} \
+          -Jiterations=${{ env.iterations }} \
           -Jconstant_time=${{ github.event.inputs.constant_time }} \
           -Jrandom_time=${{ github.event.inputs.random_time }} \
           -Jrandom_time_variance=${{ github.event.inputs.random_time_variance }}
